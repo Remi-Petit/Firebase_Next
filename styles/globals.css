@@ -31,3 +31,11 @@ body {
     text-wrap: balance;
   }
 }
+
+p, span, input, textarea {
+  color: black;
+}
+
+.black {
+  color: black;
+}

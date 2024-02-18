@@ -5,6 +5,7 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'fire
 import { db } from '../../../lib/firebase';
 import { Inter } from "next/font/google";
 import Layout from "../../../../components/Layout";
+import Link from 'next/link';
 
 export default function EditProductPage() {
     const [product, setProduct] = useState({ name: '', price: '', imageUrl: '' });
@@ -20,8 +21,14 @@ export default function EditProductPage() {
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                // Supposons que data.imageUrl est un chemin dans Firebase Storage
-                const imageUrl = await getDownloadURL(storageRef(getStorage(), data.imageUrl));
+                let imageUrl;
+                try {
+                    const imageRef = storageRef(getStorage(), data.imageUrl);
+                    imageUrl = await getDownloadURL(imageRef);
+                } catch (error) {
+                    console.error("Error fetching image URL:", error);
+                    imageUrl = await getDownloadURL(storageRef(getStorage(), 'Images/noImage/noImage.jpg'));
+                }
                 setProduct({ ...data, imageUrl });
             } else {
                 console.log("No such document!");
@@ -68,6 +75,7 @@ export default function EditProductPage() {
     return (
         <Layout>
         <div>
+            <Link href={`/products`}>Retour</Link>
             <h1>Modifier le Produit</h1>
             <form onSubmit={handleSubmit}>
                 <div>

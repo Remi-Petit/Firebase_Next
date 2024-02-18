@@ -20,14 +20,16 @@ export default function ProductPage() {
             
             if (docSnap.exists()) {
                 setProduct(docSnap.data());
+                let url;
                 try {
                     const imageRef = ref(getStorage(), docSnap.data().imageUrl);
-                    const url = await getDownloadURL(imageRef);
-                    setImageUrl(url);
+                    url = await getDownloadURL(imageRef);
                 } catch (error) {
                     console.error("Error fetching image URL:", error);
-                    setImageUrl('/path/to/default/image'); // Chemin vers une image par défaut
+                    // Utilisez directement `ref` ici au lieu de `storageRef`
+                    url = await getDownloadURL(ref(getStorage(), 'Images/noImage/noImage.jpg'));
                 }
+                setImageUrl(url);
             } else {
                 console.log("No such document!");
             }

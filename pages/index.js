@@ -25,7 +25,7 @@ export default function VoirProduits() {
                     console.log(imageUrl);
                 } catch (error) {
                     console.error("Error fetching image URL:", error);
-                    imageUrl = 'Images/Products/Pierre/background.jpg'; // Mettez ici une URL d'image par défaut si nécessaire
+                    imageUrl = await getDownloadURL(ref(getStorage(), 'Images/noImage/noImage.jpg'));
                 }
                 return { id: doc.id, ...data, imageUrl };
             }));
@@ -52,7 +52,7 @@ export default function VoirProduits() {
                         <div className="bg-white rounded-lg shadow-md overflow-hidden">
                             <img src={produit.imageUrl} alt={produit.name} className="w-full h-48 object-cover object-center" />
                             <div className="p-4">
-                                <h2 className="text-xl font-semibold mb-2">{produit.name}</h2>
+                                <h2 className="text-xl font-semibold mb-2 black">{produit.name}</h2>
                                 <p className="text-gray-600">{produit.description}</p>
                                 <p className="text-gray-800 font-bold mt-2">{produit.price} €</p>
                             </div>

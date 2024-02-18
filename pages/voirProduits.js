@@ -24,7 +24,7 @@ export default function VoirProduits({ produitsData }) {
                         console.log(imageUrl);
                     } catch (error) {
                         console.error("Error fetching image URL:", error);
-                        imageUrl = 'Images/Products/Pierre/background.jpg'; // Mettez ici une URL d'image par défaut si nécessaire
+                        imageUrl = 'Images/noImage/noImage.jpg'; // Mettez ici une URL d'image par défaut si nécessaire
                     }
                     return { id: doc.id, ...data, imageUrl };
                 }));

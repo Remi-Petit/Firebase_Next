@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db } from '../../../lib/firebase';
-import { Inter } from "next/font/google";
+import { auth, db } from '../../../lib/firebase'; // Assurez-vous que le chemin d'importation est correct
+import { onAuthStateChanged } from 'firebase/auth';
 import Layout from "../../../../components/Layout";
 import Link from 'next/link';
 
@@ -14,29 +14,45 @@ export default function EditProductPage() {
     const { uid } = router.query;
 
     useEffect(() => {
-        const fetchProduct = async () => {
-            if (!uid) return;
-            const docRef = doc(db, "products", uid);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                let imageUrl;
-                try {
-                    const imageRef = storageRef(getStorage(), data.imageUrl);
-                    imageUrl = await getDownloadURL(imageRef);
-                } catch (error) {
-                    console.error("Error fetching image URL:", error);
-                    imageUrl = await getDownloadURL(storageRef(getStorage(), 'Images/noImage/noImage.jpg'));
-                }
-                setProduct({ ...data, imageUrl });
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Récupération des données de l'utilisateur connecté pour vérifier son rôle
+                const userDocRef = doc(db, "users", user.uid);
+                getDoc(userDocRef).then((docSnap) => {
+                    if (docSnap.exists() && docSnap.data().role === "vendeur") {
+                        // L'utilisateur est un vendeur, continuer à charger le produit
+                        fetchProduct();
+                    } else {
+                        // L'utilisateur n'est pas un vendeur, le rediriger
+                        router.push("/");
+                    }
+                });
             } else {
-                console.log("No such document!");
+                // Aucun utilisateur connecté, rediriger vers la page de connexion ou d'accueil
+                router.push("/login");
             }
-        };
+        });
+    }, [router, uid]);
 
-        fetchProduct();
-    }, [uid]);
+    const fetchProduct = async () => {
+        if (!uid) return;
+        const docRef = doc(db, "products", uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            let imageUrl;
+            try {
+                imageUrl = await getDownloadURL(storageRef(getStorage(), data.imageUrl));
+            } catch (error) {
+                console.error("Error fetching image URL:", error);
+                imageUrl = '/Images/noImage/noImage.jpg'; // Utilisez une image par défaut si nécessaire
+            }
+            setProduct({ ...data, imageUrl });
+        } else {
+            console.log("No such document!");
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
